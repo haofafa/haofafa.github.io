@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>验证码终极挑战 - 10关</title>
+    <style>
+        :root {
+            --bg: #f0f2f5;
+            --card-bg: #ffffff;
+            --text: #1a1a2e;
+            --border: #e2e8f0;
+            --accent: #fb7299;
+            --success: #10b981;
+            --error: #ef4444;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+            --radius: 14px;
+            --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font);
+            background: linear-gradient(135deg, #fce4ec 0%, #f5f5f5 50%, #e3f2fd 100%);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 520px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fb7299;
+        }
+        .score-display {
+            display: inline-block;
+            margin-top: 6px;
+            background: #fff;
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: var(--shadow);
+            color: #fb7299;
+            border: 1.5px solid #fce4ec;
+        }
+
+        .level-selector {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .level-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            background: #fff;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text);
+            transition: all 0.18s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .level-btn:hover {
+            border-color: #fb7299;
+            color: #fb7299;
+        }
+        .level-btn.active {
+            background: #fb7299;
+            color: #fff;
+            border-color: #fb7299;
+        }
+        .level-btn.passed {
+            background: var(--success);
+            color: #fff;
+            border-color: var(--success);
+        }
+        .level-btn.failed {
+            background: var(--error);
+            color: #fff;
+            border-color: var(--error);
+        }
+        .level-btn.skipped {
+            background: #94a3b8;
+            color: #fff;
+            border-color: #94a3b8;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 28px 22px;
+            text-align: center;
+            min-height: 420px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #fce4ec;
+        }
+
+        .level-title {
+            font-size: 0.72rem;
+            letter-spacing: 2px;
+            color: #c0a0b0;
+            margin-bottom: 14px;
+            font-weight: 600;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 22px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.88rem;
+            font-weight: 600;
+            font-family: var(--font);
+        }
+        .btn-primary {
+            background: #fb7299;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: #e85d7a;
+        }
+        .btn-secondary {
+            background: #fff;
+            color: #888;
+            border: 1.5px solid #e8e8e8;
+        }
+        .btn-danger {
+            background: #fff;
+            color: #ef4444;
+            border: 1.5px solid #fecaca;
+        }
+        .btn-danger:hover {
+            background: #fef2f2;
+        }
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .feedback {
+            margin-top: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            min-height: 22px;
+        }
+        .feedback.success {
+            color: var(--success);
+        }
+        .feedback.error {
+            color: var(--error);
+        }
+        .feedback.info {
+            color: #94a3b8;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .note {
+            font-size: 0.7rem;
+            color: #c0b0b8;
+            margin-top: 10px;
+        }
+
+        .captcha-canvas {
+            border-radius: 8px;
+            border: 2px solid #fce4ec;
+            margin: 8px auto;
+            display: block;
+            max-width: 100%;
+        }
+
+        .text-input {
+            width: 100%;
+            max-width: 260px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 2px solid #f0d0db;
+            font-size: 0.9rem;
+            font-family: var(--font);
+            text-align: center;
+            outline: none;
+        }
+        .text-input:focus {
+            border-color: #fb7299;
+            box-shadow: 0 0 0 3px rgba(251, 114, 153, 0.1);
+        }
+
+        .slider-container {
+            width: 280px;
+            margin: 8px auto;
+        }
+        .slider-track {
+            width: 100%;
+            height: 48px;
+            background: #fce4ec;
+            border-radius: 24px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            border: 1.5px solid #f8d0dc;
+        }
+        .slider-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #fce4ec, #fb7299);
+            border-radius: 24px 0 0 24px;
+            width: 0%;
+        }
+        .slider-thumb {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 40px;
+            height: 40px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(251, 114, 153, 0.25);
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            z-index: 2;
+            border: 2px solid #fb7299;
+        }
+        .slider-thumb:active {
+            cursor: grabbing;
+        }
+        .slider-label {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            font-size: 0.78rem;
+            color: #c090a0;
+            z-index: 1;
+        }
+
+        .image-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 8px 0;
+        }
+        .image-option {
+            width: 90px;
+            height: 90px;
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 3px solid #f8e0e8;
+            transition: all 0.15s ease;
+            position: relative;
+        }
+        .image-option:hover {
+            border-color: #fb7299;
+            transform: translateY(-3px);
+        }
+        .image-option.selected-option {
+            border-color: #fb7299 !important;
+            box-shadow: 0 0 0 4px rgba(251, 114, 153, 0.3);
+        }
+        .image-option img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .grid-container {
+            display: grid;
+            gap: 5px;
+            margin: 8px auto;
+            justify-content: center;
+        }
+        .grid-cell-img {
+            border-radius: 8px;
+            border: 2px solid #f8e0e8;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.15s ease;
+            position: relative;
+        }
+        .grid-cell-img:hover {
+            border-color: #fb7299;
+        }
+        .grid-cell-img.selected-cell {
+            border-color: #fb7299 !important;
+            box-shadow: 0 0 0 3px rgba(251, 114, 153, 0.35);
+        }
+
+        .oneclick-area {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #fce4ec, #fff);
+            border: 3px dashed #fb7299;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #fb7299;
+            font-weight: 600;
+            margin: 10px auto;
+        }
+        .oneclick-area:hover {
+            background: #fff5f7;
+            transform: scale(1.05);
+        }
+
+        .char-btn {
+            position: absolute;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+            transition: all 0.15s ease;
+            z-index: 3;
+            padding: 6px 10px;
+            min-width: 32px;
+            text-align: center;
+        }
+        .char-btn:hover {
+            transform: scale(1.3);
+            color: #ffe066 !important;
+        }
+        .char-btn.correct-click {
+            color: #4eff4e !important;
+            text-shadow: 0 0 10px rgba(78, 255, 78, 0.8);
+        }
+
+        .click-badge {
+            position: absolute;
+            background: #fb7299;
+            color: #fff;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            pointer-events: none;
+            animation: badgePop 0.3s ease;
+            box-shadow: 0 2px 8px rgba(251, 114, 153, 0.5);
+        }
+        @keyframes badgePop {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.3);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .click-badge-wrong {
+            background: #ef4444;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5);
+        }
+
+        .puzzle-piece-img {
+            position: absolute;
+            z-index: 5;
+            pointer-events: none;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+            border-radius: 3px;
+        }
+
+        .result-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+        .result-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 36px 28px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+            border: 2px solid #fce4ec;
+        }
+        .result-score {
+            font-size: 4.5rem;
+            font-weight: 800;
+            letter-spacing: -2px;
+            background: linear-gradient(135deg, #fb7299, #ff9db5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .twisted-display {
+            display: inline-flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 700;
+            min-height: 28px;
+            margin-top: 6px;
+            align-items: center;
+        }
+        .twisted-display img {
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .twisted-display .arrow-sep {
+            color: #c0b0b8;
+            font-size: 0.85rem;
+            margin: 0 2px;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        @media (max-width: 420px) {
+            .card {
+                padding: 20px 12px;
+            }
+            .slider-container {
+                width: 240px;
+            }
+            .image-option {
+                width: 70px;
+                height: 70px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 验证码终极挑战</h1>
+            <span class="score-display" id="scoreDisplay">🌸 得分: 0 / 100</span>
+        </div>
+
+        <div class="level-selector" id="levelSelector">
+            <button class="level-btn" data-level="0">0</button>
+            <button class="level-btn" data-level="1">1</button>
+            <button class="level-btn" data-level="2">2</button>
+            <button class="level-btn" data-level="3">3</button>
+            <button class="level-btn" data-level="4">4</button>
+            <button class="level-btn" data-level="5">5</button>
+            <button class="level-btn" data-level="6">6</button>
+            <button class="level-btn" data-level="7">7</button>
+            <button class="level-btn" data-level="8">8</button>
+            <button class="level-btn" data-level="9">9</button>
+        </div>
+
+        <div class="card" id="challengeCard">
+            <div class="level-title" id="levelTitle">关卡 0</div>
+            <div id="challengeContent"></div>
+            <div class="feedback" id="feedback"></div>
+            <div class="card-actions">
+                <button class="btn btn-secondary" id="btnSkip">⏭ 跳过</button>
+                <button class="btn btn-danger" id="btnReset" style="display:none;">🔄 重置</button>
+                <button class="btn btn-primary" id="btnSubmit">✨ 提交</button>
+            </div>
+            <p class="note" id="noteText"></p>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const TOTAL_LEVELS = 10;
+            let currentLevel = 0;
+            const levelStatus = {};
+            const levelScore = {};
+            for (let i = 0; i < TOTAL_LEVELS; i++) { levelStatus[i] = 'pending';
+                levelScore[i] = 0; }
+            let challengeState = {};
+            let totalScore = 0;
+            const MAX_SCORE = 100;
+            const POINTS_PER_LEVEL = Math.floor(MAX_SCORE / TOTAL_LEVELS);
+
+            const levelSelector = document.getElementById('levelSelector');
+            const levelTitle = document.getElementById('levelTitle');
+            const challengeContent = document.getElementById('challengeContent');
+            const feedbackEl = document.getElementById('feedback');
+            const btnSkip = document.getElementById('btnSkip');
+            const btnReset = document.getElementById('btnReset');
+            const btnSubmit = document.getElementById('btnSubmit');
+            const noteText = document.getElementById('noteText');
+            const scoreDisplay = document.getElementById('scoreDisplay');
+            const levelBtns = levelSelector.querySelectorAll('.level-btn');
+
+            function updateScoreDisplay() {
+                scoreDisplay.textContent = `🌸 得分: ${totalScore} / ${MAX_SCORE}`;
+            }
+
+            function updateLevelButtons() {
+                levelBtns.forEach(btn => {
+                    const lv = parseInt(btn.dataset.level);
+                    btn.classList.remove('active', 'passed', 'failed', 'skipped');
+                    if (lv === currentLevel) btn.classList.add('active');
+                    if (levelStatus[lv] === 'passed') btn.classList.add('passed');
+                    if (levelStatus[lv] === 'failed') btn.classList.add('failed');
+                    if (levelStatus[lv] === 'skipped') btn.classList.add('skipped');
+                });
+            }
+
+            function setFeedback(msg, type) {
+                feedbackEl.textContent = msg;
+                feedbackEl.className = 'feedback';
+                if (type) feedbackEl.classList.add(type);
+            }
+
+            function clearFeedback() {
+                feedbackEl.textContent = '';
+                feedbackEl.className = 'feedback';
+            }
+
+            function isLevelCompleted(lv) {
+                return ['passed', 'failed', 'skipped'].includes(levelStatus[lv]);
+            }
+
+            function autoAdvance() {
+                const nextLevel = currentLevel + 1;
+                if (nextLevel < TOTAL_LEVELS) {
+                    setTimeout(() => switchLevel(nextLevel), 700);
+                } else {
+                    setTimeout(showFinalResult, 700);
+                }
+            }
+
+            function submitPass() {
+                if (isLevelCompleted(currentLevel)) return;
+                levelStatus[currentLevel] = 'passed';
+                levelScore[currentLevel] = POINTS_PER_LEVEL;
+                totalScore += POINTS_PER_LEVEL;
+                updateScoreDisplay();
+                updateLevelButtons();
+                setFeedback(`🎉 正确！+${POINTS_PER_LEVEL}分，进入下一关...`, 'success');
+                disableInteraction();
+                btnReset.style.display = 'none';
+                autoAdvance();
+            }
+
+            function submitFail() {
+                if (isLevelCompleted(currentLevel)) return;
+                levelStatus[currentLevel] = 'failed';
+                levelScore[currentLevel] = 0;
+                updateLevelButtons();
+                setFeedback('😢 验证失败，0分，进入下一关...', 'error');
+                disableInteraction();
+                btnReset.style.display = 'none';
+                autoAdvance();
+            }
+
+            function submitSkip() {
+                if (isLevelCompleted(currentLevel)) return;
+                levelStatus[currentLevel] = 'skipped';
+                levelScore[currentLevel] = 0;
+                updateLevelButtons();
+                setFeedback('⏭ 已跳过，进入下一关...', 'info');
+                disableInteraction();
+                btnReset.style.display = 'none';
+                autoAdvance();
+            }
+
+            function resetLevel() {
+                if (isLevelCompleted(currentLevel)) return;
+                challengeState = {};
+                clearFeedback();
+                renderLevel(currentLevel);
+                btnSubmit.disabled = false;
+                btnSkip.disabled = false;
+                btnReset.style.display = 'inline-flex';
+            }
+
+            function disableInteraction() {
+                const card = document.getElementById('challengeCard');
+                const interactiveEls = card.querySelectorAll(
+                    'canvas, input, .grid-cell-img, .image-option, .oneclick-area, .slider-thumb, .char-btn, button:not(#btnSkip):not(#btnSubmit):not(#btnReset)'
+                    );
+                interactiveEls.forEach(el => {
+                    el.style.pointerEvents = 'none';
+                    el.style.opacity = '0.6';
+                });
+                btnSubmit.disabled = true;
+                btnSkip.disabled = true;
+                btnReset.style.display = 'none';
+            }
+
+            function showFinalResult() {
+                let grade = '';
+                if (totalScore >= 90) grade = '🏆 验证大师';
+                else if (totalScore >= 70) grade = '👍 表现不错';
+                else if (totalScore >= 50) grade = '🤔 还需努力';
+                else grade = '😅 再接再厉';
+
+                const passedCount = Object.values(levelStatus).filter(s => s === 'passed').length;
+                const failedCount = Object.values(levelStatus).filter(s => s === 'failed').length;
+                const skippedCount = Object.values(levelStatus).filter(s => s === 'skipped').length;
+
+                const overlay = document.createElement('div');
+                overlay.className = 'result-overlay';
+                overlay.innerHTML = `
+                    <div class="result-card">
+                        <div style="font-size:0.75rem;color:#c0a0b0;letter-spacing:2px;">🏅 最终成绩单</div>
+                        <div class="result-score">${totalScore}</div>
+                        <div class="result-grade" style="font-size:1.1rem;font-weight:600;color:#666;">${grade}</div>
+                        <div style="margin-top:14px;font-size:0.8rem;color:#888;line-height:1.8;">
+                            ✅ 通过: ${passedCount} 关<br>
+                            ❌ 失败: ${failedCount} 关<br>
+                            ⏭ 跳过: ${skippedCount} 关
+                        </div>
+                        <button class="btn btn-primary" style="margin-top:18px;background:#fb7299;" onclick="location.reload()">🔄 再来一次</button>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+                overlay.addEventListener('click', function(e) {
+                    if (e.target === overlay) overlay.remove();
+                });
+            }
+
+            function switchLevel(level) {
+                if (level < 0 || level >= TOTAL_LEVELS) return;
+                currentLevel = level;
+                challengeState = {};
+                clearFeedback();
+                renderLevel(currentLevel);
+                updateLevelButtons();
+                if (isLevelCompleted(currentLevel)) {
+                    btnSubmit.disabled = true;
+                    btnSkip.disabled = true;
+                    btnReset.style.display = 'none';
+                } else {
+                    btnSubmit.disabled = false;
+                    btnSkip.disabled = false;
+                    btnReset.style.display = 'inline-flex';
+                }
+            }
+
+            function drawInterferenceLines(ctx, width, height, count = 8) {
+                ctx.save();
+                for (let i = 0; i < count; i++) {
+                    ctx.strokeStyle =
+                        `rgba(${180+Math.random()*75},${140+Math.random()*60},${160+Math.random()*50},0.35)`;
+                    ctx.lineWidth = 0.8 + Math.random() * 1.2;
+                    ctx.beginPath();
+                    const x1 = Math.random() * width;
+                    const y1 = Math.random() * height;
+                    const x2 = x1 + (Math.random() - 0.5) * width * 0.7;
+                    const y2 = y1 + (Math.random() - 0.5) * height * 0.7;
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+                }
+                ctx.restore();
+            }
+
+            function drawRandomDots(ctx, width, height, count = 30) {
+                for (let i = 0; i < count; i++) {
+                    const x = Math.random() * width;
+                    const y = Math.random() * height;
+                    const r = 1 + Math.random() * 4;
+                    ctx.beginPath();
+                    ctx.arc(x, y, r, 0, Math.PI * 2);
+                    ctx.fillStyle =
+                        `rgba(${180+Math.random()*75},${100+Math.random()*80},${140+Math.random()*60},${0.3+Math.random()*0.5})`;
+                    ctx.fill();
+                }
+            }
+
+            function generateCaptchaCanvas(text, width, height, bgColor = '#fefcfd', fontSizeMin = 24, fontSizeMax = 42) {
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = bgColor;
+                ctx.fillRect(0, 0, width, height);
+                drawRandomDots(ctx, width, height, 22);
+                drawInterferenceLines(ctx, width, height, 8);
+                const colors = ['#fb7299', '#e74c3c', '#e67e22', '#2ecc71', '#00a1d6', '#9b59b6', '#f39c12',
+                '#1abc9c'];
+                const chars = text.split('');
+                const avgCharWidth = (fontSizeMin + fontSizeMax) / 2 * 0.65;
+                const totalWidth = chars.length * avgCharWidth;
+                const startX = Math.max(6, (width - totalWidth) / 2);
+                const startY = height / 2 + (fontSizeMin + fontSizeMax) / 6;
+                let cx = startX;
+                chars.forEach((char, i) => {
+                    const color = colors[i % colors.length];
+                    const rot = -12 + Math.random() * 24;
+                    const scaleX = 0.7 + Math.random() * 0.5;
+                    const scaleY = 0.7 + Math.random() * 0.5;
+                    const charSize = fontSizeMin + Math.random() * (fontSizeMax - fontSizeMin);
+                    ctx.save();
+                    ctx.translate(cx, startY + (Math.random() - 0.5) * 14);
+                    ctx.rotate(rot * Math.PI / 180);
+                    ctx.scale(scaleX, scaleY);
+                    ctx.font = `bold ${charSize}px "PingFang SC", "Microsoft YaHei", sans-serif`;
+                    ctx.fillStyle = color;
+                    ctx.shadowColor = 'rgba(0,0,0,0.12)';
+                    ctx.shadowBlur = 2;
+                    ctx.fillText(char, 0, 0);
+                    ctx.shadowBlur = 0;
+                    ctx.restore();
+                    cx += avgCharWidth * (0.85 + Math.random() * 0.3);
+                });
+                drawInterferenceLines(ctx, width, height, 5);
+                drawRandomDots(ctx, width, height, 14);
+                return canvas;
+            }
+
+            function generateTwistedCharCanvas(char, size) {
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, size, size);
+                const colors = ['#fb7299', '#e74c3c', '#e67e22', '#2ecc71', '#00a1d6', '#9b59b6'];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const rot = -10 + Math.random() * 20;
+                const scaleX = 0.75 + Math.random() * 0.4;
+                const scaleY = 0.75 + Math.random() * 0.4;
+                const charSize = size * 0.65;
+                ctx.save();
+                ctx.translate(size / 2, size / 2);
+                ctx.rotate(rot * Math.PI / 180);
+                ctx.scale(scaleX, scaleY);
+                ctx.font = `bold ${charSize}px "PingFang SC", "Microsoft YaHei", sans-serif`;
+                ctx.fillStyle = color;
+                ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                ctx.shadowBlur = 2;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(char, 0, 0);
+                ctx.restore();
+                return canvas;
+            }
+
+            function renderLevel(level) {
+                levelTitle.innerHTML = `关卡 ${level}`;
+                noteText.textContent = '';
+                challengeContent.innerHTML = '';
+                challengeState = {};
+                if (isLevelCompleted(level)) {
+                    const status = levelStatus[level];
+                    let emoji, statusText, color;
+                    if (status === 'passed') { emoji = '✅';
+                        statusText = '已通过';
+                        color = '#10b981'; } else if (status === 'failed') { emoji = '❌';
+                        statusText = '未通过';
+                        color = '#ef4444'; } else { emoji = '⏭';
+                        statusText = '已跳过';
+                        color = '#94a3b8'; }
+                    challengeContent.innerHTML =
+                        `<div style="font-size:1.1rem;font-weight:600;color:${color};padding:40px;">${emoji} ${statusText}<br><span style="font-size:0.75rem;color:#aaa;">本关已完成</span></div>`;
+                    btnSubmit.disabled = true;
+                    btnSkip.disabled = true;
+                    btnReset.style.display = 'none';
+                    return;
+                }
+                btnSubmit.disabled = false;
+                btnSkip.disabled = false;
+                btnReset.style.display = 'inline-flex';
+                switch (level) {
+                    case 0:
+                        renderLevel0();
+                        break;
+                    case 1:
+                        renderLevel1();
+                        break;
+                    case 2:
+                        renderLevel2();
+                        break;
+                    case 3:
+                        renderLevel3();
+                        break;
+                    case 4:
+                        renderLevel4();
+                        break;
+                    case 5:
+                        renderLevel5();
+                        break;
+                    case 6:
+                        renderLevel6();
+                        break;
+                    case 7:
+                        renderLevel7();
+                        break;
+                    case 8:
+                        renderLevel8();
+                        break;
+                    case 9:
+                        renderLevel9();
+                        break;
+                }
+            }
+
+            // ===== 0：识别"一键三连" =====
+            function renderLevel0() {
+                noteText.textContent = '💡 请输入图片中的扭曲文字';
+                challengeState.level0 = { answer: '一键三连' };
+                const canvas = generateCaptchaCanvas('一键三连', 300, 120, '#fefcfd', 26, 40);
+                challengeContent.innerHTML = `
+                    <img src="${canvas.toDataURL('image/png')}" class="captcha-canvas" style="width:300px;height:120px;">
+                    <input type="text" class="text-input" id="input0" placeholder="请输入图片中的文字" maxlength="10" style="margin-top:8px;">
+                `;
+                challengeState.level0.checkAnswer = () => document.getElementById('input0')?.value.trim() ===
+                    '一键三连';
+            }
+
+            // ===== 1：依次点击 修复间距 + 序号消息框 + 扭曲显示 =====
+            function renderLevel1() {
+                noteText.textContent = '🖱 请依次点击：点赞投币收藏';
+                const imgUrl =
+                    'https://qcloud.dpfile.com/pc/pH6Z4WGJbJOjQlTxAfkqMYh7UVJQSqsGD5px640bZlRlz5pEXaAjfdXiOZWKlHBN.jpg';
+                challengeState.level1 = {
+                    expected: ['点', '赞', '投', '币', '收', '藏'],
+                    currentIndex: 0,
+                    clickedChars: [],
+                    totalClicks: 0,
+                };
+
+                challengeContent.innerHTML = `
+                    <p style="font-size:0.85rem;font-weight:600;color:#fb7299;margin-bottom:6px;">请依次点击：<span style="letter-spacing:2px;">点赞投币收藏</span></p>
+                    <div id="ch1Container" style="position:relative;width:320px;height:220px;margin:0 auto;display:inline-block;">
+                        <img id="ch1Bg" src="${imgUrl}" crossorigin="anonymous" style="width:320px;height:220px;object-fit:cover;border-radius:8px;display:block;">
+                    </div>
+                    <div id="ch1Display" class="twisted-display"></div>
+                `;
+
+                function updateDisplay() {
+                    const display = document.getElementById('ch1Display');
+                    const state = challengeState.level1;
+                    display.innerHTML = '';
+                    state.clickedChars.forEach((char, idx) => {
+                        const c = generateTwistedCharCanvas(char, 30);
+                        const img = document.createElement('img');
+                        img.src = c.toDataURL('image/png');
+                        img.style.width = '30px';
+                        img.style.height = '30px';
+                        display.appendChild(img);
+                        if (idx < state.clickedChars.length - 1) {
+                            const arrow = document.createElement('span');
+                            arrow.className = 'arrow-sep';
+                            arrow.textContent = '→';
+                            display.appendChild(arrow);
+                        }
+                    });
+                }
+
+                function addClickBadge(container, x, y, num, isWrong) {
+                    const badge = document.createElement('div');
+                    badge.className = 'click-badge' + (isWrong ? ' click-badge-wrong' : '');
+                    badge.textContent = num;
+                    badge.style.left = (x - 12) + 'px';
+                    badge.style.top = (y - 12) + 'px';
+                    container.appendChild(badge);
+                    setTimeout(() => badge.remove(), 1500);
+                }
+
+                const bgImg = document.getElementById('ch1Bg');
+                bgImg.onload = () => {
+                    const container = document.getElementById('ch1Container');
+                    // 重新布局位置，加大间距
+                    const positions = [
+                        { char: '点', x: 35, y: 40, color: '#ff4444', rot: -8, skew: 3 },
+                        { char: '赞', x: 160, y: 45, color: '#ff8800', rot: 6, skew: -4 },
+                        { char: '投', x: 40, y: 100, color: '#44cc44', rot: -5, skew: 2 },
+                        { char: '币', x: 175, y: 100, color: '#4488ff', rot: 10, skew: -2 },
+                        { char: '收', x: 45, y: 158, color: '#cc44cc', rot: -12, skew: 5 },
+                        { char: '藏', x: 170, y: 160, color: '#ffaa00', rot: 4, skew: -3 },
+                        { char: '白', x: 100, y: 65, color: '#999', rot: -15, skew: 6 },
+                        { char: '嫖', x: 110, y: 135, color: '#777', rot: 8, skew: -5 },
+                    ];
+
+                    positions.forEach(p => {
+                        const btn = document.createElement('button');
+                        btn.className = 'char-btn';
+                        btn.textContent = p.char;
+                        btn.style.left = p.x + 'px';
+                        btn.style.top = p.y + 'px';
+                        btn.style.color = p.color;
+                        btn.style.fontSize = '26px';
+                        btn.style.transform =
+                            `rotate(${p.rot}deg) skewX(${p.skew}deg) scale(${0.8+Math.random()*0.35},${0.8+Math.random()*0.35})`;
+                        btn.style.position = 'absolute';
+                        btn.style.padding = '4px 6px';
+                        btn.style.zIndex = '3';
+                        btn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            if (isLevelCompleted(1)) return;
+                            const state = challengeState.level1;
+                            state.totalClicks++;
+                            const clickNum = state.totalClicks;
+
+                            if (p.char === state.expected[state.currentIndex]) {
+                                // 正确
+                                state.currentIndex++;
+                                state.clickedChars.push(p.char);
+                                btn.classList.add('correct-click');
+                                btn.style.pointerEvents = 'none';
+                                addClickBadge(container, p.x + 13, p.y - 5, clickNum, false);
+                                updateDisplay();
+                            } else {
+                                // 错误：静默重置，但显示序号
+                                addClickBadge(container, p.x + 13, p.y - 5, clickNum, true);
+                                state.currentIndex = 0;
+                                state.clickedChars = [];
+                                updateDisplay();
+                                container.querySelectorAll('.char-btn').forEach(b => {
+                                    b.classList.remove('correct-click');
+                                    b.style.pointerEvents = 'auto';
+                                });
+                            }
+                        });
+                        container.appendChild(btn);
+                    });
+                };
+                challengeState.level1.checkAnswer = () => challengeState.level1.currentIndex >= 6;
+            }
+
+            // ===== 2：UP和主 =====
+            function renderLevel2() {
+                noteText.textContent = '🔍 在5×5宫格中找出不同的项目';
+                const totalCells = 25;
+                const targetCount = 2;
+                const allPositions = Array.from({ length: totalCells }, (_, i) => i);
+                const shuffled = [...allPositions].sort(() => Math.random() - 0.5);
+                const targetPositions = new Set(shuffled.slice(0, targetCount));
+                challengeState.level2 = { targetPositions, selectedCells: new Set() };
+
+                const cellSize = 56;
+                let gridHTML =
+                    `<div class="grid-container" style="grid-template-columns:repeat(5,${cellSize}px);">`;
+                for (let i = 0; i < totalCells; i++) {
+                    const isTarget = targetPositions.has(i);
+                    const displayChar = isTarget ? 'UP' : '主';
+                    const canvas = generateCaptchaCanvas(displayChar, cellSize, cellSize, '#faf8f9', 18, 30);
+                    gridHTML += `
+                        <div class="grid-cell-img" data-index="${i}" data-is-target="${isTarget}" style="width:${cellSize}px;height:${cellSize}px;">
+                            <img src="${canvas.toDataURL('image/png')}" width="${cellSize}" height="${cellSize}" style="display:block;">
+                        </div>`;
+                }
+                gridHTML += '</div>';
+                challengeContent.innerHTML = gridHTML;
+
+                document.querySelectorAll('#challengeCard .grid-cell-img').forEach(cell => {
+                    cell.addEventListener('click', () => {
+                        if (isLevelCompleted(2)) return;
+                        const index = parseInt(cell.dataset.index);
+                        const state = challengeState.level2;
+                        if (state.selectedCells.has(index)) {
+                            state.selectedCells.delete(index);
+                            cell.classList.remove('selected-cell');
+                        } else {
+                            state.selectedCells.add(index);
+                            cell.classList.add('selected-cell');
+                        }
+                    });
+                });
+
+                challengeState.level2.checkAnswer = () => {
+                    const selectedArr = [...challengeState.level2.selectedCells];
+                    const targetArr = [...challengeState.level2.targetPositions];
+                    return selectedArr.length === targetArr.length && selectedArr.every(i => challengeState
+                        .level2.targetPositions.has(i));
+                };
+            }
+
+            // ===== 3：滑块 =====
+            function renderLevel3() {
+                noteText.textContent = '👉 拖动滑块至最右端';
+                challengeState.level3 = { sliderAtEnd: false };
+                challengeContent.innerHTML = `
+                    <div class="slider-container">
+                        <div class="slider-track" id="sliderTrack3">
+                            <div class="slider-fill" id="sliderFill3"></div>
+                            <div class="slider-thumb" id="sliderThumb3">➤</div>
+                            <div class="slider-label">→ 向右滑动验证 ←</div>
+                        </div>
+                    </div>
+                `;
+                setupSimpleSlider('sliderTrack3', 'sliderThumb3', 'sliderFill3', () => {
+                    challengeState.level3.sliderAtEnd = true;
+                });
+                challengeState.level3.checkAnswer = () => challengeState.level3.sliderAtEnd;
+            }
+
+            function setupSimpleSlider(trackId, thumbId, fillId, onComplete) {
+                setTimeout(() => {
+                    const track = document.getElementById(trackId);
+                    const thumb = document.getElementById(thumbId);
+                    const fill = document.getElementById(fillId);
+                    if (!track || !thumb || !fill) return;
+                    let isDragging = false;
+                    let thumbLeft = 3;
+                    const thumbWidth = 40;
+                    const maxLeft = track.clientWidth - thumbWidth - 6;
+
+                    function updatePos(clientX) {
+                        const rect = track.getBoundingClientRect();
+                        let newLeft = clientX - rect.left - thumbWidth / 2;
+                        newLeft = Math.max(3, Math.min(maxLeft, newLeft));
+                        thumbLeft = newLeft;
+                        thumb.style.left = newLeft + 'px';
+                        fill.style.width = ((newLeft - 3) / (maxLeft - 3) * 100 + 4) + '%';
+                    }
+                    thumb.addEventListener('mousedown', e => { if (!isLevelCompleted(currentLevel)) {
+                            isDragging = true;
+                            e.preventDefault(); } });
+                    document.addEventListener('mousemove', e => { if (isDragging) updatePos(e.clientX); });
+                    document.addEventListener('mouseup', () => {
+                        if (isDragging && thumbLeft >= maxLeft - 8) onComplete();
+                        else if (isDragging) { thumbLeft = 3;
+                            thumb.style.left = '3px';
+                            fill.style.width = '0%'; }
+                        isDragging = false;
+                    });
+                    thumb.addEventListener('touchstart', e => { if (!isLevelCompleted(currentLevel)) {
+                            isDragging = true;
+                            e.preventDefault(); } });
+                    document.addEventListener('touchmove', e => { if (isDragging) updatePos(e.touches[0]
+                            .clientX); });
+                    document.addEventListener('touchend', () => {
+                        if (isDragging && thumbLeft >= maxLeft - 8) onComplete();
+                        else if (isDragging) { thumbLeft = 3;
+                            thumb.style.left = '3px';
+                            fill.style.width = '0%'; }
+                        isDragging = false;
+                    });
+                }, 100);
+            }
+
+            // ===== 4：拼图滑块 =====
+            function renderLevel4() {
+                noteText.textContent = '🧩 拖动滑块使拼图碎片对准缺口（容差10px）';
+                const imgUrl = 'https://gips1.baidu.com/it/u=2405702478,3799594473&fm=3074&app=3074&f=PNG';
+                const holeXPercent = 55;
+                const holeYPercent = 38;
+                const holeWPercent = 16;
+                const holeHPercent = 26;
+
+                challengeState.level4 = { puzzleAligned: false, passed: false };
+
+                challengeContent.innerHTML = `
+                    <div id="puzzleContainer4" style="position:relative;width:300px;height:200px;margin:8px auto;display:inline-block;">
+                        <img id="puzzleBg4" src="" style="width:300px;height:200px;display:block;border-radius:8px;">
+                        <img id="puzzlePiece4" src="" class="puzzle-piece-img" style="left:55%;top:38%;">
+                    </div>
+                    <div class="slider-container" style="margin-top:8px;">
+                        <div class="slider-track" id="puzzleTrack4">
+                            <div class="slider-fill" id="puzzleFill4"></div>
+                            <div class="slider-thumb" id="puzzleThumb4">🧩</div>
+                            <div class="slider-label">拖动对齐拼图</div>
+                        </div>
+                    </div>
+                `;
+
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => {
+                    const holeX = holeXPercent / 100 * 300;
+                    const holeY = holeYPercent / 100 * 200;
+                    const holeW = holeWPercent / 100 * 300;
+                    const holeH = holeHPercent / 100 * 200;
+
+                    const bgCanvas = document.createElement('canvas');
+                    bgCanvas.width = 300;
+                    bgCanvas.height = 200;
+                    const bgCtx = bgCanvas.getContext('2d');
+                    bgCtx.drawImage(img, 0, 0, 300, 200);
+                    bgCtx.fillStyle = 'rgba(0,0,0,0.45)';
+                    bgCtx.fillRect(holeX, holeY, holeW, holeH);
+                    bgCtx.strokeStyle = 'rgba(255,255,255,0.8)';
+                    bgCtx.lineWidth = 2;
+                    bgCtx.setLineDash([5, 3]);
+                    bgCtx.strokeRect(holeX, holeY, holeW, holeH);
+                    document.getElementById('puzzleBg4').src = bgCanvas.toDataURL('image/png');
+
+                    const pieceCanvas = document.createElement('canvas');
+                    pieceCanvas.width = holeW;
+                    pieceCanvas.height = holeH;
+                    const pieceCtx = pieceCanvas.getContext('2d');
+                    pieceCtx.drawImage(img, holeX, holeY, holeW, holeH, 0, 0, holeW, holeH);
+                    const pieceImg = document.getElementById('puzzlePiece4');
+                    pieceImg.src = pieceCanvas.toDataURL('image/png');
+                    pieceImg.style.width = holeW + 'px';
+                    pieceImg.style.height = holeH + 'px';
+
+                    challengeState.level4.holeX = holeX;
+                    challengeState.level4.holeY = holeY;
+                    challengeState.level4.holeW = holeW;
+                    challengeState.level4.holeH = holeH;
+                };
+                img.src = imgUrl;
+
+                setTimeout(() => {
+                    const track = document.getElementById('puzzleTrack4');
+                    const thumb = document.getElementById('puzzleThumb4');
+                    const fill = document.getElementById('puzzleFill4');
+                    const piece = document.getElementById('puzzlePiece4');
+                    if (!track || !thumb || !fill || !piece) return;
+                    let isDragging = false;
+                    let thumbLeft = 3;
+                    const thumbWidth = 40;
+                    const maxLeft = track.clientWidth - thumbWidth - 6;
+
+                    function updatePos(clientX) {
+                        const rect = track.getBoundingClientRect();
+                        let newLeft = clientX - rect.left - thumbWidth / 2;
+                        newLeft = Math.max(3, Math.min(maxLeft, newLeft));
+                        thumbLeft = newLeft;
+                        thumb.style.left = newLeft + 'px';
+                        fill.style.width = ((newLeft - 3) / (maxLeft - 3) * 100 + 4) + '%';
+                        piece.style.left = ((newLeft - 3) / (maxLeft - 3) * 300) + 'px';
+                    }
+
+                    function checkAlignment() {
+                        if (challengeState.level4.passed) return;
+                        const percent = (thumbLeft - 3) / (maxLeft - 3);
+                        const pieceLeft = percent * 300;
+                        const diff = Math.abs(pieceLeft - challengeState.level4.holeX);
+                        if (diff <= 10) {
+                            challengeState.level4.puzzleAligned = true;
+                            piece.style.left = challengeState.level4.holeX + 'px';
+                            setFeedback('✅ 拼图已对齐！请提交', 'success');
+                        } else {
+                            challengeState.level4.puzzleAligned = false;
+                            thumbLeft = 3;
+                            thumb.style.left = '3px';
+                            fill.style.width = '0%';
+                            piece.style.left = challengeState.level4.holeX + 'px';
+                        }
+                    }
+
+                    thumb.addEventListener('mousedown', e => {
+                        if (isLevelCompleted(4) || challengeState.level4.passed) return;
+                        isDragging = true;
+                        e.preventDefault();
+                    });
+                    document.addEventListener('mousemove', e => { if (isDragging) updatePos(e.clientX); });
+                    document.addEventListener('mouseup', () => { if (isDragging) checkAlignment();
+                        isDragging = false; });
+                    thumb.addEventListener('touchstart', e => {
+                        if (isLevelCompleted(4) || challengeState.level4.passed) return;
+                        isDragging = true;
+                        e.preventDefault();
+                    });
+                    document.addEventListener('touchmove', e => { if (isDragging) updatePos(e.touches[0]
+                            .clientX); });
+                    document.addEventListener('touchend', () => { if (isDragging) checkAlignment();
+                        isDragging = false; });
+                }, 200);
+
+                challengeState.level4.checkAnswer = () => {
+                    if (challengeState.level4.puzzleAligned) {
+                        challengeState.level4.passed = true;
+                        return true;
+                    }
+                    return false;
+                };
+            }
+
+            // ===== 5：寻找邓小平 =====
+            function renderLevel5() {
+                noteText.textContent = '🔎 请找出"邓小平"的图片';
+                const options = [
+                    { id: 'A',
+                        url: 'https://img0.baidu.com/it/u=4254274226,3438673521&fm=253&fmt=auto&app=138&f=JPEG',
+                        correct: true },
+                    { id: 'B',
+                        url: 'https://img1.baidu.com/it/u=4265477844,2425293379&fm=253&fmt=auto&app=138&f=JPEG',
+                        correct: false },
+                    { id: 'C',
+                        url: 'https://img0.baidu.com/it/u=1627781083,1744670703&fm=253&fmt=auto&app=138&f=JPEG',
+                        correct: false },
+                ];
+                challengeState.level5 = { selectedId: null };
+
+                let html = '<div class="image-options">';
+                options.forEach(opt => {
+                    html += `
+                        <div class="image-option" data-id="${opt.id}" data-correct="${opt.correct}">
+                            <img src="${opt.url}" alt="选项${opt.id}" crossorigin="anonymous" loading="lazy">
+                            <span style="position:absolute;top:4px;left:4px;background:rgba(0,0,0,0.6);color:#fff;font-size:0.7rem;padding:2px 6px;border-radius:3px;">${opt.id}</span>
+                        </div>`;
+                });
+                html += '</div>';
+                challengeContent.innerHTML = html;
+
+                document.querySelectorAll('#challengeCard .image-option').forEach(el => {
+                    el.addEventListener('click', () => {
+                        if (isLevelCompleted(5)) return;
+                        document.querySelectorAll('#challengeCard .image-option').forEach(o => o
+                            .classList.remove('selected-option'));
+                        el.classList.add('selected-option');
+                        challengeState.level5.selectedId = el.dataset.id;
+                    });
+                });
+                challengeState.level5.checkAnswer = () => challengeState.level5.selectedId === 'A';
+            }
+
+            // ===== 6：一点即过 =====
+            function renderLevel6() {
+                noteText.textContent = '🎯 点击区域即可通过（不考虑浏览器、鼠标轨迹）';
+                challengeState.level6 = { clicked: false };
+                challengeContent.innerHTML = `<div class="oneclick-area" id="oneClickArea6">👆 点我通过</div>`;
+                document.getElementById('oneClickArea6').addEventListener('click', () => {
+                    if (isLevelCompleted(6)) return;
+                    challengeState.level6.clicked = true;
+                    document.getElementById('oneClickArea6').style.background = '#d4f5e3';
+                    document.getElementById('oneClickArea6').style.borderColor = '#10b981';
+                    document.getElementById('oneClickArea6').textContent = '✅';
+                    setFeedback('已点击！请提交', 'success');
+                });
+                challengeState.level6.checkAnswer = () => challengeState.level6.clicked;
+            }
+
+            // ===== 7：读取"关注作者" =====
+            function renderLevel7() {
+                noteText.textContent = '📝 请读取扭曲文字信息并输入';
+                const canvas = generateCaptchaCanvas('关注作者', 320, 130, '#fefcfd', 26, 40);
+                challengeContent.innerHTML = `
+                    <img src="${canvas.toDataURL('image/png')}" class="captcha-canvas" style="width:320px;height:130px;">
+                    <input type="text" class="text-input" id="input7" placeholder="请输入图片中的文字" maxlength="20" style="margin-top:8px;">
+                `;
+                challengeState.level7 = { answer: '关注作者' };
+                challengeState.level7.checkAnswer = () => document.getElementById('input7')?.value.trim() ===
+                    '关注作者';
+            }
+
+            // ===== 8：旋转验证码 =====
+            function renderLevel8() {
+                noteText.textContent = '🔄 找出方向正确的文字';
+                const allTexts = ['一', '键', '三', '连'];
+                const correctIndex = Math.floor(Math.random() * 4);
+                challengeState.level8 = { correctIndex, selectedIndex: null };
+
+                let html = '<div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;">';
+                for (let i = 0; i < 4; i++) {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 70;
+                    canvas.height = 70;
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#faf8f9';
+                    ctx.fillRect(0, 0, 70, 70);
+                    drawRandomDots(ctx, 70, 70, 8);
+                    drawInterferenceLines(ctx, 70, 70, 3);
+                    ctx.save();
+                    ctx.translate(35, 35);
+                    ctx.rotate(i === correctIndex ? (Math.random() - 0.5) * 0.12 : 0.7 + Math.random() * 2.8);
+                    ctx.font = 'bold 30px "PingFang SC","Microsoft YaHei",sans-serif';
+                    ctx.fillStyle = ['#fb7299', '#ff6b6b', '#ffa502', '#00a1d6'][i];
+                    ctx.fillText(allTexts[i], -15, 10);
+                    ctx.restore();
+                    html +=
+                        `<div class="grid-cell-img" data-index="${i}" style="width:70px;height:70px;"><img src="${canvas.toDataURL('image/png')}" width="70" height="70"></div>`;
+                }
+                html += '</div>';
+                challengeContent.innerHTML = html;
+
+                document.querySelectorAll('#challengeCard .grid-cell-img').forEach(el => {
+                    el.addEventListener('click', () => {
+                        if (isLevelCompleted(8)) return;
+                        document.querySelectorAll('#challengeCard .grid-cell-img').forEach(o => o
+                            .classList.remove('selected-cell'));
+                        el.classList.add('selected-cell');
+                        challengeState.level8.selectedIndex = parseInt(el.dataset.index);
+                    });
+                });
+                challengeState.level8.checkAnswer = () => challengeState.level8.selectedIndex === challengeState
+                    .level8.correctIndex;
+            }
+
+            // ===== 9：X币 - X币 =====
+            function renderLevel9() {
+                noteText.textContent = '🧮 计算扭曲算式的结果（支持如"12币"或"12 币"格式）';
+                const a = Math.floor(Math.random() * 10) + 1;
+                const b = Math.floor(Math.random() * 10) + 1;
+                const answer = a - b;
+                const expr = `${a}币 - ${b}币 = ?`;
+                challengeState.level9 = { answer: String(answer) };
+
+                const canvas = document.createElement('canvas');
+                canvas.width = 300;
+                canvas.height = 120;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#fefcfd';
+                ctx.fillRect(0, 0, 300, 120);
+                drawRandomDots(ctx, 300, 120, 20);
+                drawInterferenceLines(ctx, 300, 120, 8);
+                const colors = ['#fb7299', '#e74c3c', '#e67e22', '#2ecc71', '#00a1d6', '#9b59b6'];
+                const parts = [`${a}币`, '-', `${b}币`, '=', '?'];
+                let cx = 16;
+                parts.forEach((part, i) => {
+                    ctx.save();
+                    ctx.translate(cx, 60 + (Math.random() - 0.5) * 12);
+                    ctx.rotate((-8 + Math.random() * 16) * Math.PI / 180);
+                    ctx.scale(0.78 + Math.random() * 0.3, 0.78 + Math.random() * 0.3);
+                    ctx.font = 'bold 22px "PingFang SC", "Microsoft YaHei", sans-serif';
+                    ctx.fillStyle = colors[i % colors.length];
+                    ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                    ctx.shadowBlur = 2;
+                    ctx.fillText(part, 0, 0);
+                    ctx.restore();
+                    cx += part.length * 18 + 10;
+                });
+                drawInterferenceLines(ctx, 300, 120, 4);
+                drawRandomDots(ctx, 300, 120, 10);
+
+                challengeContent.innerHTML = `
+                    <img src="${canvas.toDataURL('image/png')}" class="captcha-canvas" style="width:300px;height:120px;">
+                    <input type="text" class="text-input" id="input9" placeholder="输入计算结果（可为负数）" maxlength="10" style="margin-top:8px;">
+                `;
+                challengeState.level9.checkAnswer = () => {
+                    const val = document.getElementById('input9')?.value.trim();
+                    const cleaned = val.replace(/币/g, '').replace(/\s+/g, '');
+                    return cleaned === String(answer);
+                };
+            }
+
+            // ============ 按钮事件 ============
+            btnSubmit.addEventListener('click', () => {
+                if (isLevelCompleted(currentLevel)) return;
+                const checkFn = challengeState[`level${currentLevel}`]?.checkAnswer;
+                if (checkFn && checkFn()) {
+                    submitPass();
+                } else {
+                    submitFail();
+                }
+            });
+
+            btnSkip.addEventListener('click', () => {
+                if (isLevelCompleted(currentLevel)) return;
+                submitSkip();
+            });
+
+            btnReset.addEventListener('click', () => {
+                if (isLevelCompleted(currentLevel)) return;
+                resetLevel();
+            });
+
+            levelBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    switchLevel(parseInt(btn.dataset.level));
+                });
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+                    e.preventDefault();
+                    if (!isLevelCompleted(currentLevel)) btnSubmit.click();
+                }
+            });
+
+            switchLevel(0);
+            updateLevelButtons();
+            updateScoreDisplay();
+        })();
+    </script>
+</body>
+</html>
