@@ -1,1 +1,165 @@
-qwq
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>haofafa - 个人主页</title>
+    <style>
+        :root {
+            --bg: #fdf6e3;
+            --card: #fef9ef;
+            --text: #5c4b3c;
+            --muted: #9b8c7c;
+            --border: #e8dcc8;
+            --accent: #c4a97d;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.8;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+        .hero {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--border);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin-bottom: 16px;
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .subtitle {
+            color: var(--muted);
+            font-size: 14px;
+            margin-top: 4px;
+        }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 16px;
+            transition: box-shadow 0.2s;
+        }
+        .card:hover {
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        }
+        .card h2 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--accent);
+            letter-spacing: 0.5px;
+        }
+        .card p, .card li {
+            font-size: 14px;
+            color: var(--text);
+        }
+        .card ul {
+            list-style: none;
+            padding: 0;
+        }
+        .card li {
+            padding: 4px 0;
+        }
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+        a:hover {
+            border-bottom-color: var(--accent);
+        }
+        .links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .links a {
+            display: inline-block;
+            padding: 6px 14px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 13px;
+            background: var(--card);
+            transition: all 0.2s;
+        }
+        .links a:hover {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+        footer {
+            text-align: center;
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <div class="avatar">🐧</div>
+            <h1>haofafa</h1>
+            <p class="subtitle">PM / 原站长 · 全栈开发者 · 常年在线</p>
+        </div>
+
+        <div class="card">
+            <h2>关于我</h2>
+            <p>ABOJ 的产品负责人，负责平台运营和产品设计。喜欢捣鼓各种技术，常年在线接需求。偶尔写写代码、打打游戏、逛逛洛谷。</p>
+        </div>
+
+        <div class="card">
+            <h2>负责项目</h2>
+            <ul>
+                <li>🏗️ <strong>ABOJ</strong> — 在线评测平台</li>
+                <li>📦 <strong>周边商城</strong> — OJ 周边贩卖</li>
+                <li>💬 <strong>客服系统</strong> — 智能客服小二</li>
+                <li>🔑 <strong>开放平台</strong> — API 评测服务</li>
+                <li>📚 <strong>帮助中心</strong> — 使用文档</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>联系方式</h2>
+            <p>📧 邮箱：haofafa@angrybed.cn</p>
+            <p>🌐 洛谷：<a href="https://www.luogu.com.cn/user/1240580" target="_blank">luogu.com.cn/user/1240580</a></p>
+            <p>💬 客服：<a href="https://angrybed.cn/kefu" target="_blank">angrybed.cn/kefu</a></p>
+        </div>
+
+        <div class="card">
+            <h2>链接</h2>
+            <div class="links">
+                <a href="https://angrybed.cn" target="_blank">ABOJ 主站</a>
+                <a href="https://help.angrybed.cn" target="_blank">帮助中心</a>
+                <a href="https://angrybed.cn/shop" target="_blank">周边商城</a>
+                <a href="https://angrybed.cn/kefu" target="_blank">客服小二</a>
+            </div>
+        </div>
+
+        <footer>
+            &copy; 2026 haofafa · 简约即美德
+        </footer>
+    </div>
+</body>
+</html>
